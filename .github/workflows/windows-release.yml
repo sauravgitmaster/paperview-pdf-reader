@@ -1,4 +1,4 @@
-name: Build Windows app
+name: Build PaperView apps
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     steps:
       - name: Check out source
@@ -26,9 +26,58 @@ jobs:
       - name: Build PaperView.exe
         run: python -m PyInstaller --noconfirm --clean --windowed --onefile --name PaperView --collect-all fitz --collect-all pymupdf PaperView.py
 
-      - name: Publish downloadable Windows app
+      - name: Save Windows app
+        uses: actions/upload-artifact@v4
+        with:
+          name: PaperView-Windows
+          path: dist/PaperView.exe
+
+  build-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            architecture: Intel
+          - runner: macos-15
+            architecture: Apple-Silicon
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install app and packaging tools
+        run: python -m pip install -r requirements.txt pyinstaller
+
+      - name: Build PaperView.app
+        run: python -m PyInstaller --noconfirm --clean --windowed --name PaperView --collect-all fitz --collect-all pymupdf PaperView.py
+
+      - name: Package macOS app
+        run: ditto -c -k --sequesterRsrc --keepParent dist/PaperView.app "dist/PaperView-macOS-${{ matrix.architecture }}.zip"
+
+      - name: Save macOS app
+        uses: actions/upload-artifact@v4
+        with:
+          name: PaperView-macOS-${{ matrix.architecture }}
+          path: dist/PaperView-macOS-${{ matrix.architecture }}.zip
+
+  publish-release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download app builds
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish downloadable apps
         env:
           GH_TOKEN: ${{ github.token }}
           TAG_NAME: ${{ github.ref_name }}
-        shell: pwsh
-        run: gh release create $env:TAG_NAME dist/PaperView.exe --repo $env:GITHUB_REPOSITORY --title "PaperView $env:TAG_NAME" --generate-notes
+        run: gh release create "$TAG_NAME" dist/* --repo "$GITHUB_REPOSITORY" --title "PaperView $TAG_NAME" --generate-notes
