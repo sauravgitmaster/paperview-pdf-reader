@@ -37,8 +37,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-15-intel
-            architecture: Intel
           - runner: macos-15
             architecture: Apple-Silicon
     runs-on: ${{ matrix.runner }}

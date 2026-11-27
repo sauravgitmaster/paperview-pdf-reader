@@ -17,10 +17,9 @@ MAKE A STANDALONE APP
 DOWNLOAD THE READY-MADE APP
 Open the repository's Releases page on GitHub and download the build for your
 computer. Windows users download PaperView.exe. Mac users download either
-PaperView-macOS-Apple-Silicon.zip or PaperView-macOS-Intel.zip. Unzip the Mac
-download and move PaperView.app to Applications. On first launch, macOS may ask
-you to confirm opening the app; control-click PaperView.app, choose Open, then
-confirm Open.
+PaperView-macOS-Apple-Silicon.zip. Unzip the Mac download and move PaperView.app
+to Applications. On first launch, macOS may ask you to confirm opening the app;
+control-click PaperView.app, choose Open, then confirm Open.
 
 USING IT
 - Click Open PDF, or press Ctrl+O.
